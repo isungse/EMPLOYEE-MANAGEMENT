@@ -78,12 +78,34 @@ export type PayrollRow = {
 
 type QueryResult<T> = { data: T; error: string | null };
 type SupabaseQuery = PromiseLike<{ data: unknown; error: { message: string } | null }>;
+type SupabaseTable = "v_employee_list" | "v_roster_list" | "v_payroll_list";
 
 async function query<T>(fn: (client: SupabaseClient) => SupabaseQuery, fallback: T): Promise<QueryResult<T>> {
   const client = getSupabaseAdmin();
   if (!client) return { data: fallback, error: "DB 환경변수가 설정되지 않았습니다." };
   const { data, error } = await fn(client);
   return { data: (data as T | null) ?? fallback, error: error?.message ?? null };
+}
+
+async function queryAll<T>(table: SupabaseTable, orderColumn: string, secondaryOrderColumn?: string): Promise<QueryResult<T[]>> {
+  const client = getSupabaseAdmin();
+  if (!client) return { data: [], error: "DB 환경변수가 설정되지 않았습니다." };
+
+  const pageSize = 1000;
+  const rows: T[] = [];
+
+  for (let from = 0; ; from += pageSize) {
+    let request = client.from(table).select("*").order(orderColumn, { ascending: table === "v_employee_list" });
+    if (secondaryOrderColumn) request = request.order(secondaryOrderColumn);
+    const { data, error } = await request.range(from, from + pageSize - 1);
+
+    if (error) return { data: rows, error: error.message };
+    const page = (data ?? []) as T[];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+
+  return { data: rows, error: null };
 }
 
 export async function getDashboardData() {
@@ -110,51 +132,15 @@ export async function getDashboardData() {
 }
 
 export async function getEmployees() {
-  return query<EmployeeRow[]>(
-    (client) =>
-      client
-        .from("v_employee_list")
-        .select("*")
-        .order("employee_code")
-        .limit(300),
-    []
-  );
+  return queryAll<EmployeeRow>("v_employee_list", "employee_code");
 }
 
 export async function getRosters() {
-  return query<RosterRow[]>(
-    (client) =>
-      client
-        .from("v_roster_list")
-        .select("*")
-        .order("roster_month", { ascending: false })
-        .limit(400),
-    []
-  );
+  return queryAll<RosterRow>("v_roster_list", "roster_month", "employee_code_snapshot");
 }
 
 export async function getPayrollRows() {
-  const client = getSupabaseAdmin();
-  if (!client) return { data: [], error: "DB 환경변수가 설정되지 않았습니다." };
-
-  const pageSize = 1000;
-  const rows: PayrollRow[] = [];
-
-  for (let from = 0; ; from += pageSize) {
-    const { data, error } = await client
-      .from("v_payroll_list")
-      .select("*")
-      .order("period_month", { ascending: false })
-      .order("employee_code_snapshot")
-      .range(from, from + pageSize - 1);
-
-    if (error) return { data: rows, error: error.message };
-    const page = (data ?? []) as PayrollRow[];
-    rows.push(...page);
-    if (page.length < pageSize) break;
-  }
-
-  return { data: rows, error: null };
+  return queryAll<PayrollRow>("v_payroll_list", "period_month", "employee_code_snapshot");
 }
 
 export async function getImportCounts() {

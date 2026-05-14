@@ -70,6 +70,54 @@ select {
   color: var(--text-primary);
 }
 
+.filter-panel {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(240px, 360px) max-content;
+  align-items: end;
+  gap: 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.filter-panel label {
+  display: grid;
+  gap: 6px;
+}
+
+.filter-panel span {
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.filter-panel input,
+.filter-panel select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 7px 10px;
+  color: var(--text-primary);
+}
+
+.filter-count {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eceff3;
+  border-radius: 6px;
+  background: #f8fafc;
+  padding: 0 12px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .month-tabs {
   display: flex;
   flex-wrap: wrap;

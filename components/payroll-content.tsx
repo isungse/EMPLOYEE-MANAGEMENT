@@ -21,9 +21,29 @@ function isTotalRow(row: PayrollRow) {
 export function PayrollContent({ rows }: PayrollContentProps) {
   const months = useMemo(() => Array.from(new Set(rows.map((row) => row.period_month))).sort((a, b) => b.localeCompare(a)), [rows]);
   const [selectedMonth, setSelectedMonth] = useState(months[0] ?? "");
+  const [department, setDepartment] = useState("all");
+  const [search, setSearch] = useState("");
   const selectedRows = rows.filter((row) => row.period_month === selectedMonth);
   const totalRow = selectedRows.find(isTotalRow);
-  const employeeRows = selectedRows.filter((row) => !isTotalRow(row));
+  const departments = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          rows
+            .filter((row) => !isTotalRow(row))
+            .map((row) => row.department_name_snapshot)
+            .filter(Boolean) as string[]
+        )
+      ).sort((a, b) => a.localeCompare(b, "ko")),
+    [rows]
+  );
+  const normalizedSearch = search.trim().toLowerCase();
+  const employeeRows = selectedRows.filter((row) => {
+    if (isTotalRow(row)) return false;
+    const departmentMatches = department === "all" || row.department_name_snapshot === department;
+    const searchMatches = !normalizedSearch || (row.employee_name_snapshot ?? "").toLowerCase().includes(normalizedSearch);
+    return departmentMatches && searchMatches;
+  });
 
   function selectMonth(month: string) {
     setSelectedMonth(month);
@@ -47,6 +67,25 @@ export function PayrollContent({ rows }: PayrollContentProps) {
         <KpiCard label="공제합계" value={totalRow ? formatCurrency(totalRow.deduction_total) : "-"} tone="negative" />
         <KpiCard label="차인지급액" value={totalRow ? formatCurrency(totalRow.net_payment) : "-"} tone="positive" />
       </div>
+
+      <section className="filter-panel mb-5">
+        <label>
+          <span>부서</span>
+          <select value={department} onChange={(event) => setDepartment(event.target.value)}>
+            <option value="all">전체 부서</option>
+            {departments.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>검색</span>
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="성명" />
+        </label>
+        <div className="filter-count">조회 {employeeRows.length.toLocaleString("ko-KR")}명</div>
+      </section>
 
       <DataPanel title={`${formatMonth(selectedMonth)} 직원급여명단`}>
         <table className="data-table">
