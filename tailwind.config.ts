@@ -5,12 +5,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        body: "#F2F4F7",
-        card: "#FFFFFF",
-        border: "#DBDBDB",
-        primary: "#FF7200",
-        positive: "#33732E",
-        negative: "#BF3030"
+        body: "var(--surface-body)",
+        card: "var(--surface-card)",
+        border: "var(--border-default)",
+        primary: "var(--primary)",
+        positive: "var(--positive)",
+        negative: "var(--negative)"
       },
       fontFamily: {
         sans: [

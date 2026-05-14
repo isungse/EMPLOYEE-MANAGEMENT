@@ -79,6 +79,7 @@ export type PayrollRow = {
 type QueryResult<T> = { data: T; error: string | null };
 type SupabaseQuery = PromiseLike<{ data: unknown; error: { message: string } | null }>;
 type SupabaseTable = "v_employee_list" | "v_roster_list" | "v_payroll_list";
+type QueryOrder = { column: string; ascending?: boolean };
 
 async function query<T>(fn: (client: SupabaseClient) => SupabaseQuery, fallback: T): Promise<QueryResult<T>> {
   const client = getSupabaseAdmin();
@@ -87,22 +88,28 @@ async function query<T>(fn: (client: SupabaseClient) => SupabaseQuery, fallback:
   return { data: (data as T | null) ?? fallback, error: error?.message ?? null };
 }
 
-async function queryAll<T>(table: SupabaseTable, orderColumn: string, secondaryOrderColumn?: string): Promise<QueryResult<T[]>> {
+async function queryAll<T>(table: SupabaseTable, primaryOrder: QueryOrder, secondaryOrder?: QueryOrder): Promise<QueryResult<T[]>> {
   const client = getSupabaseAdmin();
   if (!client) return { data: [], error: "DB 환경변수가 설정되지 않았습니다." };
 
   const pageSize = 1000;
+  const maxPages = 200;
   const rows: T[] = [];
 
-  for (let from = 0; ; from += pageSize) {
-    let request = client.from(table).select("*").order(orderColumn, { ascending: table === "v_employee_list" });
-    if (secondaryOrderColumn) request = request.order(secondaryOrderColumn);
+  for (let pageIndex = 0; pageIndex < maxPages; pageIndex++) {
+    const from = pageIndex * pageSize;
+    let request = client.from(table).select("*").order(primaryOrder.column, { ascending: primaryOrder.ascending ?? true });
+    if (secondaryOrder) request = request.order(secondaryOrder.column, { ascending: secondaryOrder.ascending ?? true });
     const { data, error } = await request.range(from, from + pageSize - 1);
 
     if (error) return { data: rows, error: error.message };
     const page = (data ?? []) as T[];
     rows.push(...page);
     if (page.length < pageSize) break;
+
+    if (pageIndex === maxPages - 1) {
+      return { data: rows, error: "조회 가능한 최대 행 수를 초과했습니다. 필터 또는 페이지네이션이 필요합니다." };
+    }
   }
 
   return { data: rows, error: null };
@@ -132,15 +139,15 @@ export async function getDashboardData() {
 }
 
 export async function getEmployees() {
-  return queryAll<EmployeeRow>("v_employee_list", "employee_code");
+  return queryAll<EmployeeRow>("v_employee_list", { column: "employee_code", ascending: true });
 }
 
 export async function getRosters() {
-  return queryAll<RosterRow>("v_roster_list", "roster_month", "employee_code_snapshot");
+  return queryAll<RosterRow>("v_roster_list", { column: "roster_month", ascending: false }, { column: "employee_code_snapshot" });
 }
 
 export async function getPayrollRows() {
-  return queryAll<PayrollRow>("v_payroll_list", "period_month", "employee_code_snapshot");
+  return queryAll<PayrollRow>("v_payroll_list", { column: "period_month", ascending: false }, { column: "employee_code_snapshot" });
 }
 
 export async function getImportCounts() {
@@ -153,5 +160,9 @@ export async function getImportCounts() {
       return { table_name: table, row_count: count ?? 0, error: error?.message ?? null };
     })
   );
-  return { data, error: null };
+  const failedTables = data.filter((row) => row.error).map((row) => row.table_name);
+  return {
+    data,
+    error: failedTables.length > 0 ? `적재 현황 조회 실패: ${failedTables.join(", ")}` : null
+  };
 }

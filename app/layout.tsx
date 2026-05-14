@@ -9,12 +9,42 @@ export const metadata: Metadata = {
 };
 
 const navItems = [
-  { href: "/", label: "대시보드", icon: BarChart3 },
-  { href: "/employees", label: "직원정보", icon: UsersRound },
-  { href: "/rosters", label: "월별명단", icon: Database },
-  { href: "/payroll", label: "급여명단", icon: WalletCards },
-  { href: "/imports", label: "업로드 이력", icon: FileClock },
-  { href: "/upload", label: "업로드", icon: FileUp }
+  {
+    href: "/",
+    label: "대시보드",
+    icon: BarChart3,
+    badgeClass: "bg-blue-50 text-blue-700 ring-blue-200"
+  },
+  {
+    href: "/employees",
+    label: "직원정보",
+    icon: UsersRound,
+    badgeClass: "bg-emerald-50 text-emerald-700 ring-emerald-200"
+  },
+  {
+    href: "/rosters",
+    label: "월별명단",
+    icon: Database,
+    badgeClass: "bg-amber-50 text-amber-700 ring-amber-200"
+  },
+  {
+    href: "/payroll",
+    label: "급여명단",
+    icon: WalletCards,
+    badgeClass: "bg-rose-50 text-rose-700 ring-rose-200"
+  },
+  {
+    href: "/imports",
+    label: "업로드 이력",
+    icon: FileClock,
+    badgeClass: "bg-violet-50 text-violet-700 ring-violet-200"
+  },
+  {
+    href: "/upload",
+    label: "업로드",
+    icon: FileUp,
+    badgeClass: "bg-cyan-50 text-cyan-700 ring-cyan-200"
+  }
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -34,9 +64,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="flex h-9 items-center gap-2 rounded-md border border-transparent px-3 text-sm font-medium text-gray-600 transition-colors hover:border-border hover:bg-gray-50 hover:text-gray-900"
+                      className="flex h-10 items-center gap-2 rounded-md border border-transparent px-2.5 text-sm font-medium text-gray-600 transition-colors hover:border-border hover:bg-gray-50 hover:text-gray-900"
                     >
-                      <Icon size={16} />
+                      <span
+                        className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md ring-1 ${item.badgeClass}`}
+                        aria-hidden="true"
+                      >
+                        <Icon size={16} strokeWidth={2.2} />
+                      </span>
                       {item.label}
                     </Link>
                   );

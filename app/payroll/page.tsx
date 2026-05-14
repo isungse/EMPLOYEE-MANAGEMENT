@@ -5,14 +5,19 @@ import { getPayrollRows } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
-export default async function PayrollPage() {
+type PayrollPageProps = {
+  searchParams?: Promise<{ month?: string }>;
+};
+
+export default async function PayrollPage({ searchParams }: PayrollPageProps) {
+  const params = await searchParams;
   const { data, error } = await getPayrollRows();
 
   return (
     <>
       <PageHeader title="급여명단 조회" description="월별 급여 요약과 차인지급액을 확인합니다." />
       <EmptyWarning message={error} />
-      <PayrollContent rows={data} />
+      <PayrollContent rows={data} initialMonth={params?.month} />
     </>
   );
 }

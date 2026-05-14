@@ -9,10 +9,6 @@ type RosterListContentProps = {
   rows: RosterRow[];
 };
 
-function monthKey(month: string) {
-  return month.slice(0, 7);
-}
-
 export function RosterListContent({ rows }: RosterListContentProps) {
   const months = useMemo(() => Array.from(new Set(rows.map((row) => row.roster_month))).sort((a, b) => b.localeCompare(a)), [rows]);
   const [month, setMonth] = useState(months[0] ?? "all");

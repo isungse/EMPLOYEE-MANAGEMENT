@@ -8,6 +8,7 @@ import { formatCurrency, formatMonth, formatNumber } from "@/lib/format";
 
 type PayrollContentProps = {
   rows: PayrollRow[];
+  initialMonth?: string;
 };
 
 function monthKey(month: string) {
@@ -18,9 +19,10 @@ function isTotalRow(row: PayrollRow) {
   return row.department_name_snapshot === "총계" || row.employee_code_snapshot.endsWith("명");
 }
 
-export function PayrollContent({ rows }: PayrollContentProps) {
+export function PayrollContent({ rows, initialMonth }: PayrollContentProps) {
   const months = useMemo(() => Array.from(new Set(rows.map((row) => row.period_month))).sort((a, b) => b.localeCompare(a)), [rows]);
-  const [selectedMonth, setSelectedMonth] = useState(months[0] ?? "");
+  const initialSelectedMonth = months.find((month) => monthKey(month) === initialMonth) ?? months[0] ?? "";
+  const [selectedMonth, setSelectedMonth] = useState(initialSelectedMonth);
   const [department, setDepartment] = useState("all");
   const [search, setSearch] = useState("");
   const selectedRows = rows.filter((row) => row.period_month === selectedMonth);

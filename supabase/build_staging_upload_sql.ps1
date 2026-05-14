@@ -1,6 +1,6 @@
 param(
   [string]$InputDir = ".\supabase\upload_ready",
-  [string]$OutputPath = ".\supabase\hr_upload_staging_data.sql"
+  [string]$OutputPath = ".\supabase\upload_ready\hr_upload_staging_data.sql"
 )
 
 $ErrorActionPreference = "Stop"
