@@ -1,6 +1,7 @@
 import { EmptyWarning } from "@/components/empty-warning";
 import { PageHeader } from "@/components/page-header";
 import { PayrollContent } from "@/components/payroll-content";
+import { requireAdmin } from "@/lib/auth/session";
 import { getPayrollRows } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,7 @@ type PayrollPageProps = {
 };
 
 export default async function PayrollPage({ searchParams }: PayrollPageProps) {
+  await requireAdmin();
   const params = await searchParams;
   const { data, error } = await getPayrollRows();
 

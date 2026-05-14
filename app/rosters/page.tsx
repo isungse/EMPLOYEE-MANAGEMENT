@@ -1,11 +1,13 @@
 import { EmptyWarning } from "@/components/empty-warning";
 import { PageHeader } from "@/components/page-header";
 import { RosterListContent } from "@/components/roster-list-content";
+import { requireAdmin } from "@/lib/auth/session";
 import { getRosters } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function RostersPage() {
+  await requireAdmin();
   const { data, error } = await getRosters();
 
   return (

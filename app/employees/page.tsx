@@ -1,11 +1,13 @@
 import { EmployeeListContent } from "@/components/employee-list-content";
 import { EmptyWarning } from "@/components/empty-warning";
 import { PageHeader } from "@/components/page-header";
+import { requireAdmin } from "@/lib/auth/session";
 import { getEmployees } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function EmployeesPage() {
+  await requireAdmin();
   const { data, error } = await getEmployees();
 
   return (

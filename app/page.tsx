@@ -1,6 +1,7 @@
 import { DashboardContent } from "@/components/dashboard-content";
 import { EmptyWarning } from "@/components/empty-warning";
 import { PageHeader } from "@/components/page-header";
+import { requireAdmin } from "@/lib/auth/session";
 import { getDashboardData } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,7 @@ type DashboardPageProps = {
 };
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  await requireAdmin();
   const params = await searchParams;
   const { summary, gender, payroll, hireRetire } = await getDashboardData();
   const error = summary.error || gender.error || payroll.error || hireRetire.error;

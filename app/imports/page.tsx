@@ -1,6 +1,7 @@
 import { DataPanel } from "@/components/data-panel";
 import { EmptyWarning } from "@/components/empty-warning";
 import { PageHeader } from "@/components/page-header";
+import { requireAdmin } from "@/lib/auth/session";
 import { formatNumber } from "@/lib/format";
 import { getImportCounts } from "@/lib/data";
 
@@ -17,6 +18,7 @@ const tableLabels: Record<string, string> = {
 };
 
 export default async function ImportsPage() {
+  await requireAdmin();
   const { data, error } = await getImportCounts();
 
   return (

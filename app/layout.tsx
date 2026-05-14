@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BarChart3, Database, FileClock, FileUp, UsersRound, WalletCards } from "lucide-react";
+import { BarChart3, Database, FileClock, FileUp, LogIn, LogOut, UsersRound, WalletCards } from "lucide-react";
+import { logoutAction } from "@/app/login/actions";
+import { getAdminSession } from "@/lib/auth/session";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -47,7 +49,9 @@ const navItems = [
   }
 ];
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const adminSession = await getAdminSession();
+
   return (
     <html lang="ko">
       <body>
@@ -76,6 +80,36 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </Link>
                   );
                 })}
+                {adminSession ? (
+                  <form action={logoutAction} className="ml-2 flex items-center gap-2 border-l border-border pl-3">
+                    <span className="max-w-[180px] truncate text-xs font-semibold text-gray-500">{adminSession.email}</span>
+                    <button
+                      type="submit"
+                      className="flex h-10 items-center gap-2 rounded-md border border-transparent px-2.5 text-sm font-medium text-gray-600 transition-colors hover:border-border hover:bg-gray-50 hover:text-gray-900"
+                    >
+                      <span
+                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gray-50 text-gray-700 ring-1 ring-border"
+                        aria-hidden="true"
+                      >
+                        <LogOut size={16} strokeWidth={2.2} />
+                      </span>
+                      로그아웃
+                    </button>
+                  </form>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="ml-2 flex h-10 items-center gap-2 rounded-md border border-transparent px-2.5 text-sm font-medium text-gray-600 transition-colors hover:border-border hover:bg-gray-50 hover:text-gray-900"
+                  >
+                    <span
+                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gray-50 text-gray-700 ring-1 ring-border"
+                      aria-hidden="true"
+                    >
+                      <LogIn size={16} strokeWidth={2.2} />
+                    </span>
+                    로그인
+                  </Link>
+                )}
               </nav>
             </div>
           </header>
